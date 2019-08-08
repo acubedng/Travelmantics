@@ -3,8 +3,9 @@ package com.example.travelmantics;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,8 +16,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
@@ -40,10 +39,10 @@ public class DealActivity extends AppCompatActivity {
         setContentView(R.layout.activity_deal);
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
-        txtTitle = (EditText) findViewById(R.id.txtTitle);
-        txtDescription = (EditText) findViewById(R.id.txtDescription);
-        txtPrice = (EditText) findViewById(R.id.txtPrice);
-        imageView = (ImageView) findViewById(R.id.image);
+        txtTitle = findViewById(R.id.txtTitle);
+        txtDescription = findViewById(R.id.txtDescription);
+        txtPrice = findViewById(R.id.txtPrice);
+        imageView = findViewById(R.id.image);
         Intent intent = getIntent();
         TravelDeal deal = (TravelDeal) intent.getSerializableExtra("Deal");
         if (deal==null) {
@@ -58,9 +57,9 @@ public class DealActivity extends AppCompatActivity {
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);//This allows the user to select a particular type of data
                 intent.setType("image/jpeg");
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);// Only jpeg images on the device can be selected
                 startActivityForResult(intent.createChooser(intent,
                         "Insert Picture"), PICTURE_RESULT);
             }
@@ -101,34 +100,39 @@ public class DealActivity extends AppCompatActivity {
             menu.findItem(R.id.save_menu).setVisible(false);
             enableEditTexts(false);
             findViewById(R.id.btnImage).setEnabled(false);
-
         }
 
 
         return true;
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK && data!= null && data.getData() != null) {
-            Uri imageUri = data.getData();
+        if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK) {
+            final Uri imageUri = data.getData();
             final StorageReference ref = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
-            ref.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
+                    String url = ref.getDownloadUrl().toString();
+                    //String url = taskSnapshot.getDownloadUrl().toString();
+                    String pictureName = taskSnapshot.getMetadata().getReference().getPath();
+                    deal.setImageName(pictureName);
+                    Log.d("Url: ", url);
+                    Log.d("Name", pictureName);
+                    ref.getPath();
                     ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            deal.setImageUrl(uri.toString());
-                            showImage(deal.getImageUrl());
+                            String url = uri.toString();
+                            deal.setImageUrl(url);
+                            showImage(url);
                         }
                     });
-                    //String url = taskSnapshot.getDownloadUrl().toString();
-                    deal.setImageName(taskSnapshot.getStorage().getPath());
-                    //Log.d("Url: ", url);
-                    //Log.d("Name", pictureName);
+
                 }
             });
 
