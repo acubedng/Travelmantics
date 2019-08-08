@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../AlcChallengess" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../ChallengeAndroid" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../DSC" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../intent-dice" vcs="Git" />
+  </component>
+</project>
